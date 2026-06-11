@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1920">
+<title>Burger Queen — Builder</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Inter:wght@400;500;600;700;800&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --brown-dark:   #2C1206;
+    --brown-accent: #5C2A12;
+    --orange:       #E8742A;
+    --orange-light: #F0935A;
+    --orange-pale:  #F5B07A;
+    --cream:        #C9A87A;
+    --white:        #FFFFFF;
+    --burger-w:     460px;
+  }
+
+  html { height: 100%; overflow: hidden; }
+  body {
+    background: var(--brown-dark);
+    font-family: 'Inter', sans-serif;
+    position: relative;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  /* ══ BG PATTERN ══ */
+  .bg-pattern {
+    position: fixed; inset: 0;
+    pointer-events: none; z-index: 0; overflow: hidden;
+  }
+  .bg-pattern svg { width: 100%; height: 100%; opacity: 0.055; }
+
+  /* ══ SINGLE CENTERED COLUMN ══ */
+  .page {
+    position: relative; z-index: 1;
+    display: flex; flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    overflow: visible;
+    padding: 0px 40px 90px;
+  }
+
+  /* ── BURGER QUEEN LOGO ── */
+  .brand-logo {
+    display: flex; flex-direction: column; align-items: center;
+    margin-bottom: 8px;
+  }
+  .brand-crown svg {
+    width: 60px; height: auto;
+    display: block; margin-bottom: 4px;
+  }
+  .brand-word {
+    display: block;
+    font-family: 'Fredoka One', cursive;
+    letter-spacing: -0.01em;
+    text-transform: uppercase;
+    line-height: 0.88;
+    text-align: center;
+  }
+  .brand-word-burger {
+    font-size: 82px;
+    color: var(--white);
+  }
+  .brand-word-queen {
+    font-size: 90px;
+    color: var(--orange);
+    text-shadow: 0 6px 0 rgba(0,0,0,0.22), 0 0 70px rgba(232,116,42,0.2);
+    position: relative;
+  }
+  .brand-word-queen::after {
+    content: '';
+    display: block;
+    width: 55%; height: 6px;
+    background: var(--orange);
+    border-radius: 3px;
+    margin: 10px auto 0;
+    opacity: 0.4;
+  }
+
+  /* ── TAGLINE ── */
+  .tagline {
+    color: rgba(255,255,255,0.65);
+    font-size: 17px; font-weight: 500;
+    line-height: 1.6; text-align: center;
+    margin-bottom: 24px;
+    max-width: 560px;
+  }
+  .tagline strong { color: rgba(255,255,255,0.92); font-weight: 700; }
+
+  /* ── BURGER STAGE ── */
+  .burger-stage {
+    width: var(--burger-w);
+    display: flex; flex-direction: column; align-items: center;
+    flex: 0 0 auto;
+  }
+  .tooltip {
+    background: white; color: var(--brown-dark);
+    font-size: 14px; font-weight: 600;
+    padding: 9px 22px; border-radius: 24px;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 18px rgba(0,0,0,0.28);
+    transition: opacity 0.25s, transform 0.25s;
+    white-space: nowrap;
+    flex: 0 0 auto;
+  }
+  .tooltip.fade { opacity: 0; pointer-events: none; transform: translateY(-6px); }
+
+  .bun-top {
+    width: var(--burger-w); height: 192px;
+    cursor: pointer;
+    transition: transform 0.15s ease;
+    user-select: none; flex: 0 0 auto;
+    position: relative; z-index: 2;
+    margin-bottom: -14px;
+  }
+  .bun-top:hover  { transform: translateY(-6px) scale(1.02); }
+  .bun-top:active { transform: scale(0.97); }
+  .bun-top svg { width: 100%; height: 100%; display: block; }
+
+  .layers-area {
+    width: var(--burger-w);
+    display: flex; flex-direction: column;
+    justify-content: flex-end;
+    overflow: visible;
+    position: relative; z-index: 1;
+    flex: 0 0 auto;
+  }
+  .layer {
+    width: 100%; padding: 0 20px;
+    display: block;
+    font-family: 'Fredoka One', cursive;
+    font-size: 44px;
+    letter-spacing: 0.01em; text-transform: uppercase;
+    color: white; line-height: 0.92;
+    text-align: center; white-space: nowrap;
+    animation: layerIn 0.22s cubic-bezier(0.34,1.4,0.64,1);
+    flex-shrink: 0; background: transparent;
+  }
+  @keyframes layerIn {
+    from { opacity: 0; transform: scaleY(0.5) translateY(4px); }
+    to   { opacity: 1; transform: scaleY(1)   translateY(0); }
+  }
+  .input-row {
+    width: 100%; padding: 0;
+    display: flex; align-items: center; justify-content: center;
+    flex: 0 0 auto;
+  }
+  .layer-input {
+    width: 100%; background: transparent; border: none;
+    color: white; font-family: 'Fredoka One', cursive;
+    font-size: 44px; letter-spacing: 0.01em; text-transform: uppercase;
+    text-align: center; outline: none; padding: 0 20px;
+    caret-color: white; line-height: 0.92;
+  }
+  .bun-bottom {
+    width: var(--burger-w); flex: 0 0 auto;
+    position: relative; z-index: 2;
+  }
+  .bun-bottom svg { width: 100%; display: block; }
+
+  /* ── CTA (fixed bottom bar) ── */
+  .cta-area {
+    position: fixed; bottom: 0;
+    left: 50%; transform: translateX(-50%);
+    width: 100%; max-width: 640px;
+    padding: 0 32px 24px; z-index: 100;
+    display: flex; flex-direction: column; align-items: stretch;
+  }
+  .cta-area::before {
+    content: ''; display: block; height: 48px;
+    background: linear-gradient(to bottom, transparent, var(--brown-dark) 70%);
+    pointer-events: none;
+  }
+  .cta-btn {
+    background: var(--orange); color: var(--white);
+    border: none; border-radius: 60px;
+    padding: 18px 42px;
+    font-size: 17px; font-weight: 800;
+    font-family: 'Inter', sans-serif; letter-spacing: 0.04em;
+    text-transform: uppercase;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 12px;
+    transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+    box-shadow: 0 6px 32px rgba(232,116,42,0.50); width: 100%;
+  }
+  .cta-btn:disabled {
+    background: var(--brown-accent); box-shadow: none;
+    opacity: 0.45; cursor: not-allowed; color: rgba(255,255,255,0.4);
+  }
+  .cta-btn:not(:disabled):hover {
+    background: var(--orange-light); transform: translateY(-3px);
+    box-shadow: 0 12px 40px rgba(232,116,42,0.60);
+  }
+  .cta-btn:not(:disabled):active { transform: scale(0.98); }
+
+  /* ══════════════════════════════
+     RESULT SCREEN
+  ══════════════════════════════ */
+  .result-screen {
+    position: fixed; inset: 0; z-index: 300;
+    background: var(--cream);
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: flex-start;
+    overflow: hidden;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.35s;
+  }
+  .result-screen.active { opacity: 1; pointer-events: all; }
+
+  .result-back {
+    position: absolute; top: 28px; left: 36px; z-index: 20;
+    background: transparent; border: 2px solid var(--brown-accent);
+    color: var(--brown-accent); border-radius: 50px;
+    padding: 10px 24px; font-size: 15px; font-weight: 700;
+    font-family: 'Inter', sans-serif; cursor: pointer;
+    opacity: 0; transition: opacity 0.4s 2.3s, background 0.2s, color 0.2s;
+    letter-spacing: 0.02em;
+  }
+  .result-screen.active .result-back { opacity: 1; }
+  .result-back:hover { background: var(--brown-accent); color: var(--cream); }
+
+  .result-headline {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(44px, 5vw, 82px);
+    color: var(--brown-dark);
+    text-align: center;
+    line-height: 1.0;
+    letter-spacing: 0.02em;
+    margin-top: 52px;
+    padding: 0 40px 22px;
+    text-transform: uppercase;
+    opacity: 0; transform: translateY(-14px);
+    transition: opacity 0.45s 0.1s, transform 0.45s 0.1s;
+    z-index: 10; position: relative;
+    background: var(--cream);
+    width: 100%; text-align: center;
+  }
+  .result-screen.active .result-headline { opacity: 1; transform: translateY(0); }
+
+  /* stripes */
+  .stripes {
+    position: absolute;
+    top: 0; left: 50%; transform: translateX(-50%);
+    width: 240px; display: flex; gap: 0;
+    z-index: 2; height: 100%; overflow: hidden;
+  }
+  .stripe { flex: 1; clip-path: inset(0 0 100% 0); transition: none; }
+  .stripe-1 { background: #C0392B; }
+  .stripe-2 { background: var(--orange); }
+  .stripe-3 { background: #D4A96A; }
+  .stripe-4 { background: var(--brown-dark); }
+
+  /* main content row */
+  .result-main {
+    position: relative; z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 32px;
+    width: 100%;
+    padding: 0 24px;
+    margin-top: 10px;
+  }
+  .result-burger-wrap {
+    flex: 1 1 auto;
+    opacity: 0;
+    transform: scale(0.72) translateY(28px);
+    transition: opacity 0.52s cubic-bezier(0.22,1,0.36,1),
+                transform 0.52s cubic-bezier(0.22,1,0.36,1);
+  }
+  .result-burger-wrap.show { opacity: 1; transform: scale(1) translateY(0); }
+  .result-burger-wrap.shake {
+    animation: burgerShake 0.65s cubic-bezier(0.36,0.07,0.19,0.97) forwards;
+  }
+  @keyframes burgerShake {
+    0%,100% { transform: scale(1)    rotate(0deg)    translateX(0); }
+    12%      { transform: scale(1.07) rotate(-3.5deg) translateX(-8px); }
+    28%      { transform: scale(1.07) rotate(3.5deg)  translateX(8px); }
+    44%      { transform: scale(1.04) rotate(-2deg)   translateX(-4px); }
+    60%      { transform: scale(1.04) rotate(2deg)    translateX(4px); }
+    76%      { transform: scale(1.02) rotate(-1deg)   translateX(-2px); }
+    90%      { transform: scale(1.02) rotate(1deg)    translateX(2px); }
+  }
+  .result-burger-img {
+    width: clamp(420px, 52vw, 780px); height: auto; display: block;
+    filter: drop-shadow(0 32px 64px rgba(44,18,6,0.45));
+    mix-blend-mode: multiply;
+  }
+  .result-burger-fallback { width: clamp(400px, 50vw, 740px); }
+  .result-burger-fallback svg { width: 100%; height: auto; }
+
+  /* action buttons */
+  .result-actions {
+    display: flex; flex-direction: column; gap: 18px;
+    min-width: 300px; max-width: 400px; flex: 1;
+    opacity: 0; transform: translateX(24px);
+    transition: opacity 0.5s, transform 0.5s;
+  }
+  .result-actions.show { opacity: 1; transform: translateX(0); }
+
+  .result-action-btn {
+    display: flex; align-items: center; gap: 18px;
+    background: white;
+    border: 2.5px solid rgba(44,18,6,0.12);
+    border-radius: 60px;
+    padding: 18px 28px;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+    box-shadow: 0 2px 16px rgba(44,18,6,0.08);
+    width: 100%;
+  }
+  .result-action-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 28px rgba(44,18,6,0.16);
+    border-color: var(--orange);
+  }
+  .result-action-btn:active { transform: scale(0.98); }
+  .action-icon {
+    width: 50px; height: 50px; flex: 0 0 auto;
+    border: 2.5px solid var(--brown-dark);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; color: var(--brown-dark);
+  }
+  .action-text {
+    font-size: 17px; font-weight: 700;
+    color: var(--brown-dark); font-family: 'Inter', sans-serif;
+    letter-spacing: 0.01em; text-align: left; line-height: 1.3;
+  }
+
+  /* toppings list */
+  .toppings-list-panel {
+    position: relative; z-index: 5;
+    background: var(--brown-dark);
+    border-radius: 24px; padding: 22px 32px;
+    margin: 14px auto 0;
+    width: calc(100% - 160px); max-width: 900px;
+    max-height: 0; overflow: hidden;
+    transition: max-height 0.4s ease, opacity 0.3s;
+    opacity: 0;
+  }
+  .toppings-list-panel.open { max-height: 300px; opacity: 1; }
+  .toppings-list-panel p {
+    font-family: 'Fredoka One', cursive;
+    font-size: 28px; color: white;
+    line-height: 1.25; text-transform: uppercase;
+    letter-spacing: 0.02em; display: inline;
+  }
+  .toppings-list-panel p::after { content: '  ·  '; color: var(--orange); }
+  .toppings-list-panel p:last-child::after { content: ''; }
+</style>
+</head>
+<body>
+
+<!-- bg pattern -->
+<div class="bg-pattern">
+  <svg viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+    <text x="80"   y="120"  font-size="54" fill="white" transform="rotate(-20,80,120)">🍔</text>
+    <text x="340"  y="80"   font-size="46" fill="white" transform="rotate(15,340,80)">🧅</text>
+    <text x="680"  y="140"  font-size="50" fill="white" transform="rotate(-10,680,140)">🥬</text>
+    <text x="1050" y="90"   font-size="44" fill="white" transform="rotate(20,1050,90)">🍅</text>
+    <text x="1380" y="130"  font-size="54" fill="white" transform="rotate(-15,1380,130)">🧀</text>
+    <text x="1720" y="100"  font-size="48" fill="white" transform="rotate(12,1720,100)">🥓</text>
+    <text x="160"  y="380"  font-size="50" fill="white" transform="rotate(25,160,380)">🌶️</text>
+    <text x="520"  y="320"  font-size="54" fill="white" transform="rotate(-8,520,320)">🍔</text>
+    <text x="900"  y="400"  font-size="46" fill="white" transform="rotate(18,900,400)">🧄</text>
+    <text x="1260" y="350"  font-size="52" fill="white" transform="rotate(-22,1260,350)">🥒</text>
+    <text x="1600" y="380"  font-size="48" fill="white" transform="rotate(10,1600,380)">🍅</text>
+    <text x="80"   y="650"  font-size="46" fill="white" transform="rotate(-18,80,650)">🧅</text>
+    <text x="440"  y="600"  font-size="54" fill="white" transform="rotate(22,440,600)">🥬</text>
+    <text x="800"  y="670"  font-size="50" fill="white" transform="rotate(-12,800,670)">🍔</text>
+    <text x="1180" y="620"  font-size="44" fill="white" transform="rotate(16,1180,620)">🧀</text>
+    <text x="1540" y="660"  font-size="52" fill="white" transform="rotate(-8,1540,660)">🌶️</text>
+    <text x="240"  y="940"  font-size="48" fill="white" transform="rotate(12,240,940)">🥓</text>
+    <text x="660"  y="980"  font-size="54" fill="white" transform="rotate(-20,660,980)">🧄</text>
+    <text x="1060" y="920"  font-size="46" fill="white" transform="rotate(18,1060,920)">🥒</text>
+    <text x="1440" y="970"  font-size="50" fill="white" transform="rotate(-14,1440,970)">🍔</text>
+    <text x="1820" y="930"  font-size="44" fill="white" transform="rotate(8,1820,930)">🍅</text>
+  </svg>
+</div>
+
+<!-- ═══ BUILDER PAGE ═══ -->
+<div class="page">
+
+  <!-- 1. BURGER QUEEN logo -->
+  <div class="brand-logo">
+    <span class="brand-crown">
+      <svg viewBox="0 0 80 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M4 46 L4 16 L22 32 L40 6 L58 32 L76 16 L76 46 Z" fill="#E8742A" stroke="#E8742A" stroke-width="1" stroke-linejoin="round"/>
+        <rect x="2" y="42" width="76" height="9" rx="4.5" fill="#E8742A"/>
+        <circle cx="40" cy="6"  r="5" fill="#F5B07A"/>
+        <circle cx="4"  cy="16" r="4" fill="#F5B07A"/>
+        <circle cx="76" cy="16" r="4" fill="#F5B07A"/>
+      </svg>
+    </span>
+    <span class="brand-word brand-word-burger">BURGER</span>
+    <span class="brand-word brand-word-queen">QUEEN</span>
+  </div>
+
+  <!-- 3. Burger builder -->
+  <div class="tooltip" id="tooltip">Click the bun to add a topping</div>
+  <div class="burger-stage">
+
+    <div class="bun-top" id="bunTop" onclick="handleBunTap()">
+      <svg viewBox="0 0 540 228" xmlns="http://www.w3.org/2000/svg">
+        <ellipse cx="270" cy="224" rx="252" ry="12" fill="rgba(0,0,0,0.18)"/>
+        <path d="M28,182 Q28,42 270,22 Q512,42 512,182 Z" fill="#E8742A"/>
+        <path d="M28,182 Q28,128 270,112 Q512,128 512,182 Z" fill="#C55A18"/>
+        <ellipse cx="162" cy="82"  rx="13"  ry="7.5" fill="#F5B07A" transform="rotate(-22,162,82)"/>
+        <ellipse cx="270" cy="60"  rx="15"  ry="8.5" fill="#F5B07A" transform="rotate(3,270,60)"/>
+        <ellipse cx="378" cy="82"  rx="13"  ry="7.5" fill="#F5B07A" transform="rotate(20,378,82)"/>
+        <ellipse cx="214" cy="110" rx="12"  ry="7"   fill="#F5B07A" transform="rotate(-12,214,110)"/>
+        <ellipse cx="326" cy="110" rx="12"  ry="7"   fill="#F5B07A" transform="rotate(14,326,110)"/>
+        <ellipse cx="118" cy="128" rx="10"  ry="6"   fill="#F5B07A" transform="rotate(-18,118,128)"/>
+        <ellipse cx="422" cy="126" rx="10"  ry="6"   fill="#F5B07A" transform="rotate(18,422,126)"/>
+        <ellipse cx="270" cy="132" rx="12"  ry="7"   fill="#F5B07A" transform="rotate(2,270,132)"/>
+        <ellipse cx="80"  cy="156" rx="9"   ry="5.5" fill="#F5B07A" transform="rotate(-14,80,156)"/>
+        <ellipse cx="460" cy="154" rx="9"   ry="5.5" fill="#F5B07A" transform="rotate(14,460,154)"/>
+        <rect x="28" y="178" width="484" height="16" rx="8" fill="#B04E14"/>
+      </svg>
+    </div>
+
+    <div class="layers-area" id="layersArea"></div>
+
+    <div class="bun-bottom">
+      <svg viewBox="0 0 540 82" xmlns="http://www.w3.org/2000/svg">
+        <rect x="14" y="0" width="512" height="34" rx="8" fill="#C55A18"/>
+        <path d="M14,34 Q14,80 270,80 Q526,80 526,34 Z" fill="#E8742A"/>
+      </svg>
+    </div>
+  </div>
+
+</div><!-- /page -->
+
+<!-- CTA fixed bottom -->
+<div class="cta-area">
+  <button class="cta-btn" id="ctaBtn" disabled onclick="openResult()">
+    Generate My Whopper
+  </button>
+</div>
+
+<!-- ═══ RESULT SCREEN ═══ -->
+<div class="result-screen" id="resultScreen">
+
+  <button class="result-back" onclick="closeResult()">← Start Over</button>
+
+  <h1 class="result-headline">Your AI-Generated Whopper</h1>
+
+  <div class="stripes" id="stripes">
+    <div class="stripe stripe-1" id="s1"></div>
+    <div class="stripe stripe-2" id="s2"></div>
+    <div class="stripe stripe-3" id="s3"></div>
+    <div class="stripe stripe-4" id="s4"></div>
+  </div>
+
+  <div class="result-main">
+
+    <div class="result-burger-wrap" id="resultBurger">
+      <img class="result-burger-img" id="burgerImg"
+           src="burger.png" alt="Your Whopper"
+           onerror="this.style.display='none'; document.getElementById('burgerFallback').style.display='block'"/>
+      <div class="result-burger-fallback" id="burgerFallback" style="display:none;">
+        <svg viewBox="0 0 320 260" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="160" cy="252" rx="140" ry="10" fill="rgba(44,18,6,0.2)"/>
+          <path d="M30,130 Q30,30 160,18 Q290,30 290,130 Z" fill="#E8742A"/>
+          <path d="M30,130 Q30,95 160,85 Q290,95 290,130 Z" fill="#C55A18"/>
+          <path d="M20,138 Q40,122 70,132 Q100,142 130,128 Q160,114 190,128 Q220,142 250,130 Q280,118 300,134 L300,148 Q270,134 240,146 Q210,158 180,144 Q150,130 120,144 Q90,158 60,146 Q40,138 20,148 Z" fill="#4a9e3c"/>
+          <ellipse cx="160" cy="154" rx="130" ry="14" fill="#c0392b"/>
+          <rect x="28" y="162" width="265" height="14" rx="3" fill="#f5c518"/>
+          <rect x="24" y="174" width="272" height="32" rx="8" fill="#6B3410"/>
+          <rect x="24" y="174" width="272" height="14" rx="8" fill="#8B4513"/>
+          <rect x="24" y="204" width="272" height="22" rx="5" fill="#C55A18"/>
+          <path d="M24,222 Q24,248 160,248 Q296,248 296,222 Z" fill="#E8742A"/>
+          <rect x="55" y="52" width="210" height="60" rx="10" fill="rgba(255,255,255,0.15)"/>
+          <text x="160" y="76"  text-anchor="middle" font-family="sans-serif" font-size="12" fill="white" font-weight="700">Drop your image at:</text>
+          <text x="160" y="95"  text-anchor="middle" font-family="sans-serif" font-size="12" fill="white" font-weight="600">images/burger.png</text>
+        </svg>
+      </div>
+    </div>
+
+    <!-- 3 action buttons -->
+    <div class="result-actions" id="resultActions">
+      <button class="result-action-btn" onclick="toggleToppingsList()">
+        <span class="action-icon">📋</span>
+        <span class="action-text">Your Toppings List</span>
+      </button>
+      <button class="result-action-btn" onclick="downloadShare()">
+        <span class="action-icon">⬇</span>
+        <span class="action-text">Download Your AI Whopper Image</span>
+      </button>
+      <button class="result-action-btn" onclick="shareWithFriends()">
+        <span class="action-icon">🔗</span>
+        <span class="action-text">Share with Your Friends</span>
+      </button>
+    </div>
+
+  </div>
+
+  <div class="toppings-list-panel" id="toppingsListPanel"></div>
+
+</div>
+
+<script>
+  const BURGER_W    = 460;
+  const MAX_FS      = 44;
+  const MIN_FS      = 12;
+  const LAYERS_MAX_H = 260; // px — total height budget for all stacked layers (font size scaling)
+
+  let toppings = [];
+  let isTyping = false;
+  let toppingsListOpen = false;
+
+  const layersArea   = document.getElementById('layersArea');
+  const tooltip      = document.getElementById('tooltip');
+  const ctaBtn       = document.getElementById('ctaBtn');
+  const resultScreen = document.getElementById('resultScreen');
+
+  /* Font-size that fits text within burger width, capped at capFs */
+  function fitFontSizeMax(el, text, capFs) {
+    if (!text) { el.style.fontSize = capFs + 'px'; return capFs; }
+    const probe = document.createElement('span');
+    probe.style.cssText = 'position:absolute;visibility:hidden;white-space:nowrap;'
+      + 'font-family:"Fredoka One",cursive;letter-spacing:0.01em;text-transform:uppercase;padding:0 20px';
+    probe.textContent = text.toUpperCase();
+    document.body.appendChild(probe);
+    let fs = capFs;
+    probe.style.fontSize = fs + 'px';
+    while (probe.scrollWidth > BURGER_W && fs > MIN_FS) { fs--; probe.style.fontSize = fs + 'px'; }
+    document.body.removeChild(probe);
+    el.style.fontSize = fs + 'px';
+    return fs;
+  }
+
+  /* Recalculate uniform cap-size for N layers so they all fit in LAYERS_MAX_H */
+  function getCapFs(count) {
+    if (!count) return MAX_FS;
+    // each layer rendered height ≈ fontSize × 0.92 line-height
+    return Math.min(MAX_FS, Math.max(MIN_FS, Math.floor(LAYERS_MAX_H / count / 0.92)));
+  }
+
+  /* Resize ALL committed layers + active input to the new cap */
+  function resizeAllLayers() {
+    const cap = getCapFs(toppings.length);
+    layersArea.querySelectorAll('.layer').forEach((el, i) => {
+      fitFontSizeMax(el, el.textContent, cap);
+    });
+    const inp = layersArea.querySelector('.layer-input');
+    if (inp) {
+      const currentVal = inp.value || 'A';
+      fitFontSizeMax(inp, currentVal, cap);
+    }
+  }
+
+  function handleBunTap() {
+    if (toppings.length >= 8 || isTyping) return;
+    tooltip.classList.add('fade');
+    openInput();
+  }
+
+  function openInput() {
+    isTyping = true;
+    const row = document.createElement('div');
+    row.className = 'input-row'; row.id = 'activeRow';
+    const inp = document.createElement('input');
+    inp.className = 'layer-input'; inp.maxLength = 28;
+    inp.autocomplete = 'off'; inp.autocorrect = 'off'; inp.spellcheck = false;
+    // Size input dynamically as user types (width-fit only, within current cap)
+    inp.addEventListener('input', () => {
+      fitFontSizeMax(inp, inp.value || 'A', getCapFs(toppings.length + 1));
+    });
+    inp.addEventListener('keydown', e => {
+      if (e.key === 'Enter') { const v = inp.value.trim(); v ? commit(v) : cancel(); }
+      if (e.key === 'Backspace' && inp.value === '') { e.preventDefault(); deleteLastLayer(); }
+      if (e.key === 'Escape') cancel();
+    });
+    inp.addEventListener('blur', () => {
+      setTimeout(() => {
+        if (!isTyping) return;
+        const v = document.querySelector('#activeRow input')?.value.trim();
+        v ? commit(v) : cancel();
+      }, 120);
+    });
+    row.appendChild(inp);
+    layersArea.appendChild(row);
+    // Set initial font size for the new input slot
+    inp.style.fontSize = getCapFs(toppings.length + 1) + 'px';
+    inp.focus();
+  }
+
+  function commit(label) {
+    isTyping = false;
+    document.getElementById('activeRow')?.remove();
+    const text = label.toUpperCase();
+    toppings.push({ label: text });
+    const div = document.createElement('div');
+    div.className = 'layer'; div.textContent = text;
+    layersArea.appendChild(div);
+    // Resize ALL layers now that count changed
+    resizeAllLayers();
+    updateUI();
+    if (toppings.length < 8) openInput();
+  }
+
+  function deleteLastLayer() {
+    if (!toppings.length) return;
+    toppings.pop();
+    const layers = layersArea.querySelectorAll('.layer');
+    if (layers.length) layers[layers.length - 1].remove();
+    // Resize remaining layers (they grow back)
+    resizeAllLayers();
+    updateUI();
+  }
+
+  function cancel() {
+    isTyping = false;
+    document.getElementById('activeRow')?.remove();
+    if (!toppings.length) tooltip.classList.remove('fade');
+  }
+
+  function updateUI() { ctaBtn.disabled = toppings.length < 3; }
+
+  /* ══ RESULT ANIMATION ══ */
+  function openResult() {
+    if (isTyping) {
+      const v = document.querySelector('#activeRow input')?.value.trim();
+      if (v) commit(v); else cancel();
+    }
+    resultScreen.classList.add('active');
+
+    const stripeEls = ['s1','s2','s3','s4'].map(id => document.getElementById(id));
+    stripeEls.forEach(s => { s.style.transition = 'none'; s.style.clipPath = 'inset(0 0 100% 0)'; });
+    document.getElementById('resultBurger').classList.remove('show','shake');
+    document.getElementById('resultActions').classList.remove('show');
+
+    // 1. Headline (CSS)
+    // 2. Stripes from below headline
+    setTimeout(() => {
+      const h = document.querySelector('.result-headline');
+      const hb = h.offsetTop + h.offsetHeight;
+      const el = document.getElementById('stripes');
+      el.style.top = hb + 'px';
+      el.style.height = `calc(100% - ${hb}px)`;
+      stripeEls.forEach((s, i) => {
+        setTimeout(() => {
+          s.style.transition = `clip-path ${1.1 + i * 0.1}s cubic-bezier(0.4,0,0.2,1)`;
+          s.style.clipPath = 'inset(0 0 0% 0)';
+        }, i * 120);
+      });
+    }, 550);
+
+    // 3. Burger
+    setTimeout(() => document.getElementById('resultBurger').classList.add('show'), 1050);
+
+    // 4. Shake
+    setTimeout(() => {
+      const bw = document.getElementById('resultBurger');
+      bw.classList.add('shake');
+      setTimeout(() => bw.classList.remove('shake'), 700);
+    }, 1600);
+
+    // 5. Buttons
+    setTimeout(() => document.getElementById('resultActions').classList.add('show'), 2100);
+  }
+
+  function closeResult() {
+    resultScreen.classList.remove('active');
+    ['s1','s2','s3','s4'].forEach(id => {
+      const s = document.getElementById(id);
+      s.style.transition = 'none'; s.style.clipPath = 'inset(0 0 100% 0)';
+    });
+    const el = document.getElementById('stripes');
+    el.style.top = '0'; el.style.height = '100%';
+    document.getElementById('resultActions').classList.remove('show');
+    document.getElementById('resultBurger').classList.remove('show','shake');
+    toppingsListOpen = false;
+    document.getElementById('toppingsListPanel').classList.remove('open');
+  }
+
+  function toggleToppingsList() {
+    const panel = document.getElementById('toppingsListPanel');
+    toppingsListOpen = !toppingsListOpen;
+    if (toppingsListOpen) {
+      panel.innerHTML = toppings.map(t => `<p>${t.label}</p>`).join('');
+      panel.classList.add('open');
+    } else {
+      panel.classList.remove('open');
+    }
+  }
+
+  function downloadShare() {
+    const a = document.createElement('a');
+    a.href = 'images/burger.png';
+    a.download = 'my-whopper.png';
+    a.click();
+  }
+
+  function shareWithFriends() {
+    if (navigator.share) {
+      navigator.share({
+        title: 'My AI-Generated Whopper — Burger Queen',
+        text: 'Check out my custom Whopper: ' + toppings.map(t => t.label).join(', '),
+        url: window.location.href
+      }).catch(() => {});
+    } else {
+      // fallback: copy link to clipboard
+      navigator.clipboard.writeText(window.location.href).then(() => {
+        const btn = event.currentTarget;
+        const txt = btn.querySelector('.action-text');
+        const orig = txt.textContent;
+        txt.textContent = 'Link copied!';
+        setTimeout(() => txt.textContent = orig, 2000);
+      }).catch(() => {
+        window.open(window.location.href, '_blank');
+      });
+    }
+  }
+</script>
+</body>
+</html>
